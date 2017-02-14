@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data.Entity;
+using System.Data.Entity.Migrations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,6 +15,7 @@ namespace SumMaps.Model.DbContexts
     {
         public SumMapsContext() : base(ConfigurationManager.ConnectionStrings["DefaultConnection"].ConnectionString)
         {
+            Database.Initialize(true);
         }
 
         //public virtual IDbSet<User> Users { get; set; }
@@ -35,3 +37,4 @@ namespace SumMaps.Model.DbContexts
         }
     }
 }
+

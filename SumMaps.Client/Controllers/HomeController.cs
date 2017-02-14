@@ -1,9 +1,9 @@
 ﻿using SumMaps.Model;
 using SumMaps.Model.Entities;
-using SumMaps.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Web;
 using System.Web.Mvc;
 
@@ -20,24 +20,30 @@ namespace SumMaps.Controllers
         {
             ViewBag.Title = "Home Page";
 
-            var salt = HashUtility.CreateRandomSalt();
-            var passwordHash = HashUtility.CreateHash("ZAQ!2wsx", salt);
+            var isAuthenticated = Thread.CurrentPrincipal.Identity.IsAuthenticated;
 
-            var u = new User()
-            {
-                Email = "s@mailinator.com",
-                Id = Guid.NewGuid().ToString(),
-                DateCreated = DateTime.UtcNow,
-                LastUpdated = DateTime.UtcNow,
-                PasswordHash = passwordHash,
-                PasswordSalt = salt,
-                UserName = "shuan"
-            };
+            if (!isAuthenticated)
+                return RedirectToAction("SignIn", "Session");
 
-            _repo.Create(u);
-
-
+            ViewBag.Greeting = $"hi {Thread.CurrentPrincipal.Identity.Name}!";
             return View();
+
+            //var hasher = new Microsoft.AspNet.Identity.PasswordHasher();
+            //var passwordHash = hasher.HashPassword("ZAQ!2wsx");
+
+            //var u = new User()
+            //{
+            //    Email = "s@mailinator.com",
+            //    Id = Guid.NewGuid().ToString(),
+            //    DateCreated = DateTime.UtcNow,
+            //    LastUpdated = DateTime.UtcNow,
+            //    PasswordHash = passwordHash,
+            //    UserName = "shuan",
+            //    SecurityStamp = Guid.NewGuid().ToString()
+            //};
+
+            //_repo.Create(u);
+            
         }
     }
 }

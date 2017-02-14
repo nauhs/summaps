@@ -41,8 +41,7 @@ namespace SumMaps.Client
                 WithLifetime.Transient,
                 null,
                 true);
-
-            //container.RegisterType<IUserRepo, UserRepo>(new InjectionConstructor(new SumMapsContext()));
+            
         }
     }
 }

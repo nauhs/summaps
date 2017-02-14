@@ -9,24 +9,26 @@ namespace SumMaps.Model.Migrations
     {
         public Configuration()
         {
-            AutomaticMigrationsEnabled = false;
+            AutomaticMigrationsEnabled = true;
             ContextKey = "SumMaps.Model.DbContexts.SumMapsContext";
         }
 
         protected override void Seed(SumMaps.Model.DbContexts.SumMapsContext context)
         {
-            //  This method will be called after migrating to the latest version.
+            var hasher = new Microsoft.AspNet.Identity.PasswordHasher();
+            context.Users.AddOrUpdate(
+                u => u.UserName,    
+                new Entities.User()
+                {
 
-            //  You can use the DbSet<T>.AddOrUpdate() helper extension method 
-            //  to avoid creating duplicate seed data. E.g.
-            //
-            //    context.People.AddOrUpdate(
-            //      p => p.FullName,
-            //      new Person { FullName = "Andrew Peters" },
-            //      new Person { FullName = "Brice Lambson" },
-            //      new Person { FullName = "Rowan Miller" }
-            //    );
-            //
+                    Email = "s@mailinator.com",
+                    Id = Guid.NewGuid().ToString(),
+                    DateCreated = DateTime.UtcNow,
+                    LastUpdated = DateTime.UtcNow,
+                    PasswordHash = hasher.HashPassword("ZAQ!2wsx"),
+                    UserName = "shuan",
+                    SecurityStamp = Guid.NewGuid().ToString()
+                });
         }
     }
 }
