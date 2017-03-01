@@ -25,6 +25,8 @@ namespace SumMaps.Model.DbContexts
         {
             base.OnModelCreating(modelBuilder);
 
+            Database.SetInitializer<SumMapsContext>(null);
+
             //modelBuilder.Entity<User>().ToTable("User");
             modelBuilder.Entity<Map>().ToTable("Map");
 

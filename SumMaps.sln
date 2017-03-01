@@ -2,8 +2,32 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.25420.1
-MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SumMaps.Client", "SumMaps.Client\SumMaps.Client.csproj", "{DDC12B95-143B-4E9D-B28C-15A7B5799C87}"
+MinimumVisualStudioVersion = 10.0.40219.1Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "SumMaps.Ui", "SumMaps.Ui\", "{E2081239-CE6E-4F01-BBB1-D10F5F30D51B}"
+	ProjectSection(WebsiteProperties) = preProject
+		TargetFrameworkMoniker = ".NETFramework,Version%3Dv4.0"
+		Debug.AspNetCompiler.VirtualPath = "/localhost_62459"
+		Debug.AspNetCompiler.PhysicalPath = "SumMaps.Ui\"
+		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\localhost_62459\"
+		Debug.AspNetCompiler.Updateable = "true"
+		Debug.AspNetCompiler.ForceOverwrite = "true"
+		Debug.AspNetCompiler.FixedNames = "false"
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.VirtualPath = "/localhost_62459"
+		Release.AspNetCompiler.PhysicalPath = "SumMaps.Ui\"
+		Release.AspNetCompiler.TargetPath = "PrecompiledWeb\localhost_62459\"
+		Release.AspNetCompiler.Updateable = "true"
+		Release.AspNetCompiler.ForceOverwrite = "true"
+		Release.AspNetCompiler.FixedNames = "false"
+		Release.AspNetCompiler.Debug = "False"
+		VWDPort = "62459"
+		SlnRelativePath = "SumMaps.Ui\"
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SumMaps.WebServices.Site", "SumMaps.WebServices.Site\SumMaps.WebServices.Site.csproj", "{939A966C-92BC-494D-9C80-D7308DB7AE5F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SumMaps.Signin.Site", "SumMaps.Signin.Site\SumMaps.Signin.Site.csproj", "{DDC12B95-143B-4E9D-B28C-15A7B5799C87}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SumMaps.Services", "SumMaps.Services\SumMaps.Services.csproj", "{0C7D6EED-28B4-4480-B511-93B64D86FD02}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SumMaps.Model", "SumMaps.Model\SumMaps.Model.csproj", "{64376723-7CD1-4DE4-8621-7F4679C75EBA}"
 EndProject
@@ -13,14 +37,26 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{DDC12B95-143B-4E9D-B28C-15A7B5799C87}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{DDC12B95-143B-4E9D-B28C-15A7B5799C87}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{DDC12B95-143B-4E9D-B28C-15A7B5799C87}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{DDC12B95-143B-4E9D-B28C-15A7B5799C87}.Release|Any CPU.Build.0 = Release|Any CPU
 		{64376723-7CD1-4DE4-8621-7F4679C75EBA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{64376723-7CD1-4DE4-8621-7F4679C75EBA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{64376723-7CD1-4DE4-8621-7F4679C75EBA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{64376723-7CD1-4DE4-8621-7F4679C75EBA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E2081239-CE6E-4F01-BBB1-D10F5F30D51B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E2081239-CE6E-4F01-BBB1-D10F5F30D51B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E2081239-CE6E-4F01-BBB1-D10F5F30D51B}.Release|Any CPU.ActiveCfg = Debug|Any CPU
+		{E2081239-CE6E-4F01-BBB1-D10F5F30D51B}.Release|Any CPU.Build.0 = Debug|Any CPU
+		{DDC12B95-143B-4E9D-B28C-15A7B5799C87}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DDC12B95-143B-4E9D-B28C-15A7B5799C87}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DDC12B95-143B-4E9D-B28C-15A7B5799C87}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DDC12B95-143B-4E9D-B28C-15A7B5799C87}.Release|Any CPU.Build.0 = Release|Any CPU
+		{939A966C-92BC-494D-9C80-D7308DB7AE5F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{939A966C-92BC-494D-9C80-D7308DB7AE5F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{939A966C-92BC-494D-9C80-D7308DB7AE5F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{939A966C-92BC-494D-9C80-D7308DB7AE5F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0C7D6EED-28B4-4480-B511-93B64D86FD02}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0C7D6EED-28B4-4480-B511-93B64D86FD02}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0C7D6EED-28B4-4480-B511-93B64D86FD02}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0C7D6EED-28B4-4480-B511-93B64D86FD02}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
