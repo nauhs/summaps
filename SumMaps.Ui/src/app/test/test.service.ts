@@ -15,6 +15,6 @@ export class TestService {
     }
 
     get(): Promise<any> {
-        return this.http.get(this.testUrl, { withCredentials: true }).map(response => response.json().data).toPromise().catch(err => console.log(err));
+        return this.http.get(this.testUrl, { withCredentials: true }).map(response => response.json()).toPromise().catch(err => console.log(err));
     }
 }
