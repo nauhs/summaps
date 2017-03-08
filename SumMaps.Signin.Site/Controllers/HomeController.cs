@@ -25,25 +25,8 @@ namespace SumMaps.Signin.Site.Controllers
             if (!isAuthenticated)
                 return RedirectToAction("SignIn", "Session");
 
-            ViewBag.Greeting = $"hi {Thread.CurrentPrincipal.Identity.Name}!";
-            return View();
-
-            //var hasher = new Microsoft.AspNet.Identity.PasswordHasher();
-            //var passwordHash = hasher.HashPassword("ZAQ!2wsx");
-
-            //var u = new User()
-            //{
-            //    Email = "s@mailinator.com",
-            //    Id = Guid.NewGuid().ToString(),
-            //    DateCreated = DateTime.UtcNow,
-            //    LastUpdated = DateTime.UtcNow,
-            //    PasswordHash = passwordHash,
-            //    UserName = "shuan",
-            //    SecurityStamp = Guid.NewGuid().ToString()
-            //};
-
-            //_repo.Create(u);
-
+            return Redirect("http://summaps.com");
+            
         }
 
         public ActionResult Index2()
