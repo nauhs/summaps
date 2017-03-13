@@ -50,12 +50,8 @@ export class NodeComponent implements OnInit {
         this.di.pageY0 = e.pageY;
         this.di.elem = this.el.nativeElement;
         this.di.offset0 = $(this.el.nativeElement).offset();
-        
-        //this.ptrOnDragging = (e: MouseEvent) => { this.onDragging(e, this.di); };
-        //this.ptrOnMouseUp = () => { this.onMouseUp(this.ptrOnDragging, this.ptrOnMouseUp); };
-        //this.ptrOnMouseUp = () => { this.subscrMouseMove.unsubscribe(); };
 
-        let unsubscribe = () => {
+        let unsubscribe = (e: MouseEvent) => {
             this.subscrMouseMove.unsubscribe();
             this.subscrMouseUp.unsubscribe();
             this.subscrMouseOut.unsubscribe();
@@ -63,7 +59,7 @@ export class NodeComponent implements OnInit {
 
         this.subscrMouseMove = Observable.fromEvent(window, 'mousemove')
             .throttleTime(10)
-            .subscribe(e => { this.onDragging(e, this.di); });
+            .subscribe((e: MouseEvent) => { this.onDragging(e, this.di); });
 
         this.subscrMouseUp = Observable.fromEvent(window, 'mouseup')
             .subscribe(unsubscribe);
@@ -80,12 +76,6 @@ export class NodeComponent implements OnInit {
         $(di.elem).offset(offset);
 
         //$(this.el.nativeElement).css({ top: 200, left: 200, position: 'absolute' });
-    }
-
-    onMouseUp(ptrOnDragging: any, ptrOnMouseUp: any): void {
-        $('body')
-            .off('mousemove', ptrOnDragging)
-            .off('mouseup', ptrOnMouseUp);
     }
 
     
