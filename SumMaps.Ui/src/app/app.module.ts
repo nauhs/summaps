@@ -3,12 +3,12 @@ import { BrowserModule } from '@angular/platform-browser';
 import { HttpModule } from '@angular/http';
 
 import { AppComponent }  from './app.component';
-import { DragMeComponent } from './drag-me.component';
-import { TestModule } from './test/test.module'
+import { TestModule } from './test/test.module';
+import { MapDetailModule } from './map-detail/map-detail.module';
 
 @NgModule({
-    imports: [BrowserModule, TestModule, HttpModule ],
-    declarations: [AppComponent, DragMeComponent],
+    imports: [BrowserModule, HttpModule, TestModule, MapDetailModule ],
+    declarations: [AppComponent],
     bootstrap:    [ AppComponent ]
 })
 export class AppModule { }
