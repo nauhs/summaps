@@ -6,6 +6,11 @@
     offset: any;
     width: number;
     height: number;
+    branch: number;
+    branchDepth: number;
+    selected: boolean;
+    constructor() {
+    }
     samePlaceSameShape(n: Node): boolean {
         return (n.width === this.width) &&
             (n.height === this.height) &&

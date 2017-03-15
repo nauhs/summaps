@@ -1,0 +1,47 @@
+﻿$background: #FFFFFF;
+$baseNodeColor: #f9f98e;
+body { 
+  margin: 0; 
+  background-color: $background; 
+}
+
+@mixin border-radius($radius) {
+  -webkit-border-radius: $radius;
+     -moz-border-radius: $radius;
+      -ms-border-radius: $radius;
+          border-radius: $radius;
+}
+.node {
+	position: absolute;
+	border: solid 3px gray;
+	padding: 10px;
+	@include border-radius(10px);
+}
+
+.node-selected {
+    border: solid 3px saturate($baseNodeColor, 25);
+}
+
+.root-node {
+	background-color: $baseNodeColor;
+}
+
+
+$colors: #f0810f #4cb5f5 #F75da9 #b3c100 #f5f14c #00c135 #f54c71 #f7ca5d #e14cf5 #c6f54c #fccff5 #83f75d #4ccff5 #f76d5d #4c50f5;
+
+@mixin child-node-x {
+	@for $i from 1 through 15 {
+	 .node-#{$i}-l1 { background-color: nth($colors, $i) }
+	 .node-#{$i}-l2 { background-color: lighten(nth($colors, $i), 10) }
+	 .node-#{$i}-l3 { background-color: lighten(nth($colors, $i), 20) }
+	 .node-#{$i}-l4 { background-color: lighten(nth($colors, $i), 28) }
+	 .node-#{$i}-l5 { background-color: lighten(nth($colors, $i), 33) }
+	}
+}
+
+@include child-node-x
+
+
+svg {
+	position: absolute;
+}

@@ -1,4 +1,4 @@
-﻿import { Component, ViewChild, ElementRef, Input, OnInit } from '@angular/core';
+﻿import { Component, ViewChild, ElementRef, Input, OnChanges, Output } from '@angular/core';
 import {Observable}  from 'rxjs/Observable';
 import 'rxjs/add/operator/debounceTime';
 import 'rxjs/add/operator/throttleTime';
@@ -6,6 +6,8 @@ import 'rxjs/add/observable/fromEvent';
 declare var $: JQueryStatic;
 
 import { Node } from './node'
+import { NodeStyleConstants } from './map-detail-style-constants'
+import { NodeService } from './node.service'
 
 export class DraggingInfo {
     pageX0: number;
@@ -14,31 +16,40 @@ export class DraggingInfo {
     offset0: any;
 }
 
+//style = "background-color: orange; padding:20px; position:absolute; z-index:0"
 
 @Component({
+    moduleId: 'app/map-detail/node.component',
     selector: 'node',
     template: ` <node-path *ngIf='node.parent' [startNode] = node.parent [endNode] = node></node-path>
-                <div (mousedown) = "onMouseDown($event)" #my_node style="background-color: orange; padding:20px; position:absolute; z-index:0">{{node.summary}}</div>
-                <node *ngFor='let n of node.children'  [node] = n></node>`
+                <div (mousedown) = "onMouseDown($event)" #my_node class="node" [class.node-selected]='node.selected' >{{node.summary}}</div>
+                <node *ngFor='let n of node.children'  [node] = n></node>
+                `,
+    styleUrls: ['./map-detail.css']
                 
 })
-export class NodeComponent implements OnInit {
+export class NodeComponent implements OnChanges {
     @ViewChild('my_node') el: ElementRef
-    @Input() node: Node
-
+    @Input() node: Node;
+    
     subscrMouseMove: any;
     subscrMouseUp: any;
     subscrMouseLeave: any;
     subscrMouseOut: any;
     ptrOnMouseUp: any;
     di: DraggingInfo;
+
+    constructor(private nodeService: NodeService) { }
     
-    ngOnInit(): void {
+    ngOnChanges(): void {
         $(this.el.nativeElement).offset(this.node.offset);
         $(this.el.nativeElement).width(String(this.node.width) + 'px');
         $(this.el.nativeElement).height(String(this.node.height) + 'px');
+        
+        let cssClass = this.getNodeCssClass(this.node);
 
-
+        $(this.el.nativeElement).addClass(cssClass);
+        
         // get starting point of path
         let startX = this.node.offset.left + (this.node.width / 2);
         let startY = this.node.offset.top + (this.node.height / 2);
@@ -66,6 +77,8 @@ export class NodeComponent implements OnInit {
             
         this.subscrMouseOut = Observable.fromEvent(window, 'mouseout')
             .subscribe(unsubscribe);
+
+        this.nodeService.selectNode(this.node);
     }
 
     onDragging(e: MouseEvent, di: DraggingInfo): void {
@@ -76,6 +89,16 @@ export class NodeComponent implements OnInit {
         $(di.elem).offset(offset);
 
         //$(this.el.nativeElement).css({ top: 200, left: 200, position: 'absolute' });
+    }
+
+    getNodeCssClass(node: Node): string {
+        if (node.branch == 0)
+            return 'root-node';
+
+        let branchNum = (node.branch % NodeStyleConstants.numBranchOptions) == 0 ? NodeStyleConstants.numBranchOptions : (node.branch % NodeStyleConstants.numBranchOptions);
+        let branchDepthNum = (node.branchDepth > NodeStyleConstants.numDepthOptions) ? NodeStyleConstants.numDepthOptions : node.branchDepth;
+
+        return 'node-' + branchNum + '-l' + branchDepthNum;
     }
 
     

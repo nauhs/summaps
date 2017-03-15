@@ -2,6 +2,7 @@
 declare var $: JQueryStatic;
 
 import { Node } from './node'
+import { NodeStyleConstants } from './map-detail-style-constants'
 
 export class Point {
     x: number
@@ -38,14 +39,13 @@ export class PathComponent implements DoCheck {
     @Input() endNode: Node
 
     private lineWidth = 3;
-    private padding = 20
     private prevStartNode: Node
     private prevEndNode: Node
 
 
     ngDoCheck(): void {
 
-        if (this.redrawRequired) {
+        if (this.startNode && this.endNode && this.redrawRequired) {
             let pathCoords = this.getPathCoords();
 
             $(this.pathEl.nativeElement).offset({ left: pathCoords.canvasOffset.x, top: pathCoords.canvasOffset.y });
@@ -58,12 +58,6 @@ export class PathComponent implements DoCheck {
 
             this.prevEndNode = this.endNode;
             this.prevStartNode = this.startNode;
-
-            //dVal = 'M' + (startCoord.x + cCoord1.x) + ',' + (startCoord.y + cCoord1.y) + ' l1,1';
-            //$(this.pathEl.nativeElement).children('#c1').attr('d', dVal);
-
-            //dVal = 'M' + (startCoord.x + cCoord2.x) + ',' + (startCoord.y + cCoord2.y) + ' l1,1';
-            //$(this.pathEl.nativeElement).children('#c2').attr('d', dVal);
         }
         
         
@@ -77,8 +71,8 @@ export class PathComponent implements DoCheck {
     }
 
     getMidpoint(node: Node): Point {
-        let x = node.offset.left + (node.width / 2) + this.padding;
-        let y = node.offset.top + (node.height / 2) + this.padding;
+        let x = node.offset.left + (node.width / 2) + NodeStyleConstants.padding;
+        let y = node.offset.top + (node.height / 2) + NodeStyleConstants.padding;
         return { x: x, y: y };
     }
 
