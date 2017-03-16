@@ -3,25 +3,8 @@ declare var $: JQueryStatic;
 
 import { Node } from './node'
 import { NodeStyleConstants } from './map-detail-style-constants'
-
-export class Point {
-    x: number
-    y: number
-    constructor(x: number, y: number) {
-        this.x = x;
-        this.y = y;
-    }
-}
-
-export class PathCoords {
-
-    canvasOffset: Point;
-    canvasDimensions: Point;
-    startCoord: Point;
-    diffCoord: Point;
-    cCoord1: Point;
-    cCoord2: Point;
-}
+import { Point } from './point'
+import { MapDetailUiService } from './map-detail-ui-service'
 
 @Component({
     selector: 'node-path',
@@ -30,7 +13,7 @@ export class PathCoords {
                         <!--<path id="c1" d="M0,0 q10,0 200,0" stroke="black" stroke-width="5" fill="none" />
                         <path id="c2" d="M0,0 q10,0 200,0" stroke="black" stroke-width="5" fill="none" />-->
                     </svg>
-                `
+                `,
                 
 })
 export class PathComponent implements DoCheck {
@@ -42,11 +25,13 @@ export class PathComponent implements DoCheck {
     private prevStartNode: Node
     private prevEndNode: Node
 
+    constructor(private mapDetailUiService: MapDetailUiService) {
+    }
 
     ngDoCheck(): void {
 
         if (this.startNode && this.endNode && this.redrawRequired) {
-            let pathCoords = this.getPathCoords();
+            let pathCoords = this.mapDetailUiService.getPathCoords(this.startNode, this.endNode);
 
             $(this.pathEl.nativeElement).offset({ left: pathCoords.canvasOffset.x, top: pathCoords.canvasOffset.y });
 
@@ -70,80 +55,5 @@ export class PathComponent implements DoCheck {
             !this.prevEndNode.samePlaceSameShape(this.endNode);
     }
 
-    getMidpoint(node: Node): Point {
-        let x = node.offset.left + (node.width / 2) + NodeStyleConstants.padding;
-        let y = node.offset.top + (node.height / 2) + NodeStyleConstants.padding;
-        return { x: x, y: y };
-    }
-
-    getPathCoords(): PathCoords {
-        let startPoint = this.getMidpoint(this.startNode);
-        let endPoint = this.getMidpoint(this.endNode);
-
-        let width = Math.abs(startPoint.x - endPoint.x)
-        let height = Math.abs(startPoint.y - endPoint.y);
-
-        let canvasOffset: Point;
-        let startCoord: Point;
-        let diffCoord: Point;
-        let cCoord1: Point;
-        let cCoord2: Point;
-
-
-        let hypotenuse = Math.sqrt((width * width) + (height * height));
-        let atan = Math.atan(height / width);
-        let sin = Math.sin(atan * 4);
-        let cos = Math.cos(atan * 4);
-        let ampX = sin * .4 * width;
-        let ampY = cos * .4 * height;
-
-        // Q1 | Q2
-        // ___|___
-        //    |
-        // Q4 | Q3
-
-        // Quadrant 1
-        if ((startPoint.x < endPoint.x) && (startPoint.y < endPoint.y)) {
-            canvasOffset = new Point(startPoint.x, startPoint.y);
-            startCoord = new Point(0, 0);
-            diffCoord = new Point(width, height);
-            cCoord1 = new Point(((.25 * width) + ampX), ((.25 * height) + ampY));
-            cCoord2 = new Point(((.75 * width) - ampX), ((.75 * height) - ampY));
-        }
-        // Quadrant 2
-        else if ((startPoint.x >= endPoint.x) && (startPoint.y < endPoint.y)) {
-            canvasOffset = new Point(endPoint.x, startPoint.y);
-            startCoord = new Point(width, 0);
-            diffCoord = new Point(-width, height);
-            cCoord1 = new Point(-((.25 * width) + ampX), ((.25 * height) + ampY));
-            cCoord2 = new Point(-((.75 * width) - ampX), ((.75 * height) - ampY));
-        }
-        // Quadrant 3
-        else if ((startPoint.x >= endPoint.x) && (startPoint.y >= endPoint.y)) {
-            canvasOffset = new Point(endPoint.x, endPoint.y);
-            startCoord = new Point(width, height);
-            diffCoord = new Point(-width, -height);
-            cCoord1 = new Point(-((.25 * width) + ampX), -((.25 * height) + ampY));
-            cCoord2 = new Point(-((.75 * width) - ampX), -((.75 * height) - ampY));
-        }
-        // Quadrant 4
-        else if ((startPoint.x < endPoint.x) && (startPoint.y >= endPoint.y)) {
-            canvasOffset = new Point(startPoint.x, endPoint.y);
-            startCoord = new Point(0, height);
-            diffCoord = new Point(width, -height);
-            cCoord1 = new Point(((.25 * width) + ampX), -((.25 * height) + ampY));
-            cCoord2 = new Point(((.75 * width) - ampX), -((.75 * height) - ampY));
-        }
-
-        let pathCoords = new PathCoords;
-        pathCoords.canvasOffset = canvasOffset;
-        pathCoords.startCoord = startCoord;
-        pathCoords.diffCoord = diffCoord;
-        pathCoords.cCoord1 = cCoord1;
-        pathCoords.cCoord2 = cCoord2;
-        pathCoords.canvasDimensions = new Point(width, height);
-
-        return pathCoords;
-    }
     
 }

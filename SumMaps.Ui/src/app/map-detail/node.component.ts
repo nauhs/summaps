@@ -22,7 +22,7 @@ export class DraggingInfo {
     moduleId: 'app/map-detail/node.component',
     selector: 'node',
     template: ` <node-path *ngIf='node.parent' [startNode] = node.parent [endNode] = node></node-path>
-                <div (mousedown) = "onMouseDown($event)" #my_node class="node" [class.node-selected]='node.selected' >{{node.summary}}</div>
+                <div (mousedown) = "onMouseDown($event)" #my_node class="node" [class.node-selected]='node.selected' (contextmenu)='onRightClick($event)' >{{node.summary}}</div>
                 <node *ngFor='let n of node.children'  [node] = n></node>
                 `,
     styleUrls: ['./map-detail.css']
@@ -69,7 +69,6 @@ export class NodeComponent implements OnChanges {
         };
 
         this.subscrMouseMove = Observable.fromEvent(window, 'mousemove')
-            .throttleTime(10)
             .subscribe((e: MouseEvent) => { this.onDragging(e, this.di); });
 
         this.subscrMouseUp = Observable.fromEvent(window, 'mouseup')
@@ -89,6 +88,11 @@ export class NodeComponent implements OnChanges {
         $(di.elem).offset(offset);
 
         //$(this.el.nativeElement).css({ top: 200, left: 200, position: 'absolute' });
+    }
+
+    onRightClick(e: MouseEvent): boolean {
+        this.nodeService.createChildNode(this.node);
+        return false;
     }
 
     getNodeCssClass(node: Node): string {

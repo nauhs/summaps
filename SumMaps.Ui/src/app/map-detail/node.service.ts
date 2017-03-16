@@ -3,10 +3,13 @@ import { Observable } from 'rxjs/Rx';
 import 'rxjs/add/operator/toPromise';
 
 import { Node } from './node'
+import { MapDetailUiService } from './map-detail-ui-service'
 
 @Injectable()
 export class NodeService {
     private nodes: Node[];
+
+    constructor(private mapDetailUiService: MapDetailUiService) {}
 
     createNode(id: String, offset: any, summary: String, branch: number, branchDepth: number): Node {
         var node = new Node();
@@ -54,6 +57,24 @@ export class NodeService {
         for(let n of this.nodes){
             n.selected = n.id === node.id;
         }
+    }
+
+    createChildNode(node: Node): void {
+        var id = 'cn' + node.branch + '_' + (node.branchDepth + 1);
+        var branch = node.branch > 0 ?
+            node.branch :
+            (node.children ? node.children.length + 1 : 1);
+
+        var branchDepth = node.branchDepth + 1;
+
+        let offset = this.mapDetailUiService.getNewNodeOffset(node);
+        let newNode = this.createNode(id, offset, id, branch, branchDepth); 
+        newNode.parent = node;
+        if (!node.children)
+            node.children = [];
+        node.children.push(newNode);
+
+        this.selectNode(newNode);
     }
 
 }

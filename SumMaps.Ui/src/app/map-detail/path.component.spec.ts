@@ -27,29 +27,29 @@ describe('PathComponent', () => {
         //el = de.nativeElement;
     });
     
-    it('compute coords', () => {
+    //it('compute coords', () => {
 
-        let padding = 20;
-        let nodeW = 5;
-        let nodeH = 5;
-        comp.startNode = createNode(0, 0, nodeW, nodeH); 
-        comp.endNode = createNode(0, 5, nodeW, nodeH);
+    //    let padding = 20;
+    //    let nodeW = 5;
+    //    let nodeH = 5;
+    //    comp.startNode = createNode(0, 0, nodeW, nodeH); 
+    //    comp.endNode = createNode(0, 5, nodeW, nodeH);
         
-        let coords = comp.getPathCoords();        
+    //    let coords = comp.getPathCoords();        
 
-        expect(coords.canvasDimensions.x).toBe(0);
-        expect(coords.canvasDimensions.y).toBe(5);
-        expect(coords.canvasOffset.x).toBe(padding + (nodeW / 2));
-        expect(coords.canvasOffset.y).toBe(padding + (nodeH / 2));
-        expect(coords.startCoord.x).toBe(0);
-        expect(coords.startCoord.y).toBe(0);
-        expect(coords.diffCoord.x).toBe(-0);
-        expect(coords.diffCoord.y).toBe(5);
-        expect(coords.cCoord1.x).toBe(-0);
-        expect(coords.cCoord1.y).toBe(3.25);
-        expect(coords.cCoord2.x).toBe(-0);
-        expect(coords.cCoord2.y).toBe(1.75);
-    });
+    //    expect(coords.canvasDimensions.x).toBe(0);
+    //    expect(coords.canvasDimensions.y).toBe(5);
+    //    expect(coords.canvasOffset.x).toBe(padding + (nodeW / 2));
+    //    expect(coords.canvasOffset.y).toBe(padding + (nodeH / 2));
+    //    expect(coords.startCoord.x).toBe(0);
+    //    expect(coords.startCoord.y).toBe(0);
+    //    expect(coords.diffCoord.x).toBe(-0);
+    //    expect(coords.diffCoord.y).toBe(5);
+    //    expect(coords.cCoord1.x).toBe(-0);
+    //    expect(coords.cCoord1.y).toBe(3.25);
+    //    expect(coords.cCoord2.x).toBe(-0);
+    //    expect(coords.cCoord2.y).toBe(1.75);
+    //});
     
     let createNode = function(left:number, top: number, width: number, height: number): Node{
         let node = new Node();
