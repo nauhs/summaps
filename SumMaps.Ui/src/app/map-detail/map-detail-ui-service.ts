@@ -85,22 +85,14 @@ export class MapDetailUiService {
     }
 
     getNewNodeOffset(parentNode: Node): any {
-        // if root and no children
-        //    place horizontal child
-        // else if child and no children
-        //    create new child on same slope as parent
-        // rotate 20 deg from "last child"
-
         let slopeFromParent: Point;
 
         if (!parentNode.parent) {
             if (!parentNode.children || parentNode.children.length === 0)
                 return { x: parentNode.offset.left + 75, y: parentNode.offset.top };
             else {
-                let vacantAngle = this.getVacantAngle(parentNode, { x: 1, y: 0 })
-                console.log('vacant angle: ' + vacantAngle);
-                let position = this.getNodePosition(parentNode, vacantAngle);
-                console.log('position: ' + position); 
+                let newAngle = this.getAngleForNewNode(parentNode, { x: 1, y: 0 })
+                let position = this.getNodePosition(parentNode, newAngle);
                 return { left: position.x, top: position.y };
             }
 
@@ -114,10 +106,8 @@ export class MapDetailUiService {
                 return { left: x, top: y };
             }
             else {
-                let vacantAngle = this.getVacantAngle(parentNode, { x: 1, y: 0 })
-                console.log('vacant angle: ' + vacantAngle);
-                let position = this.getNodePosition(parentNode, vacantAngle);
-                console.log(position);
+                let newAngle = this.getAngleForNewNode(parentNode, this.calculateSlope(parentNode));
+                let position = this.getNodePosition(parentNode, newAngle);
                 return { left: position.x, top: position.y };
             }
         }
@@ -131,60 +121,64 @@ export class MapDetailUiService {
         return { x: childMid.x - parentMid.x, y: childMid.y - parentMid.y };
     }
 
+    /// we need the relative angle, not the absolute angle
     getNodePosition(parentNode: Node, angle: number): Point {
         
         let tan = Math.tan(angle);
-        console.log('tan: ' + tan);
+        console.log('angle: ' + angle + ' tan: ' + tan);
         let parentMid = this.getNodeMidpoint(parentNode);
         let amp = 150;
-
-        // if the angle is negative or greater than pi than the y will be lower
-        // if the angle is between .5pi and 1.5pi or -.5pi and -1.5pi then the x will be lower
-
+        
         let xMultiplier = 1;
-        if (((angle > .5 * Math.PI) && (angle < 1.5 * Math.PI)) || ((angle > -1.5 * Math.PI) && (angle < -.5 * Math.PI)))
-            xMultiplier = -1;
+        //if (((angle > .5 * Math.PI) && (angle < 1.5 * Math.PI)) || ((angle > -1.5 * Math.PI) && (angle < -.5 * Math.PI)))
+        //    xMultiplier = -1;
 
         let yMultiplier = 1;
-        if ((angle < 0) || angle > Math.PI)
-            yMultiplier = -1;
+        //if ((angle < 0) || angle > Math.PI)
+        //    yMultiplier = -1;
+        
+        let y = Math.sqrt((tan * tan * amp * amp) / ((tan * tan) + 1));
+        let x = Math.sqrt((amp * amp) / ((tan * tan) + 1));
 
-
-        let x = Math.sqrt((tan * tan * amp * amp) / ((tan * tan) + 1));
-        let y = Math.sqrt((amp * amp) / ((tan * tan) + 1));
-
-        console.log('x:');
-        console.log(x);
-        console.log(parentNode.offset.left + x);
-
-        console.log('y:');
-        console.log(y);
-        console.log(parentNode.offset.top + y);
-
+        if(
+        
         return {
             x: parentNode.offset.left + (xMultiplier * x),
             y: parentNode.offset.top + (yMultiplier * y)
         };
     }
 
-    getVacantAngle(node: Node, slopeFromParent: Point): number {
+    getAngleForNewNode(node: Node, slopeFromParent: Point): number {
         let angles: Array<number> = [];
 
-        if (node.children.length == 1)
-            return 0;
+        //if (node.children.length == 1)
+        //    return this.calculateAbsoluteAngle(Math.atan2(slopeFromParent.y, slopeFromParent.x), .2 * Math.PI);
 
         for (let c of node.children) {
+            // get angles relative to the base line which is the line from this node to its parent
             let angle = this.calculateAngleDiff(slopeFromParent, this.calculateSlope(c));
-            console.log(angle);
+            console.log('angle: ' + angle);
             angles.push(angle);
         }
 
         let sortedAngles = angles.sort((a1, a2) => (a1 > a2) ? 1 : ((a1 == a2) ? 0 : -1));
 
         let a1: number, a2: number, maxDiff: number = 0;
+
+        // if this is a root node, create child nodes at any angle
+        // if this is a child node, don't create child nodes at angles greater than 90 degrees
+        let boundaryAngle = (!node.parent ? Math.PI : Math.PI / 2);
+
+        angles.push(boundaryAngle);
+        angles.push(-boundaryAngle);
         
         for (let i = 1; i < sortedAngles.length; i++) {
-            let diff = Math.abs(sortedAngles[i] - sortedAngles[i - 1]);
+            
+            if (sortedAngles[i] > boundaryAngle || sortedAngles[i] < -boundaryAngle)
+                continue;
+
+            let diff = sortedAngles[i] - sortedAngles[i - 1];
+            
             if (diff > maxDiff) {
                 a1 = sortedAngles[i - 1];
                 a2 = sortedAngles[i];
@@ -192,30 +186,19 @@ export class MapDetailUiService {
             }
         }
 
-        return a1 + ((a2 - a1) / 2);
-
-
+        //console.log('a1:' + a1 + ' a2:' + a2 + ' diff:' + (a2 - a1) / 2) + ' vacant angle: ' + a1 + ((a2 - a1) / 2));
+        console.log('a1:' + a1 + ' a2:' + a2);
+        return this.calculateAbsoluteAngle(Math.atan2(slopeFromParent.y, slopeFromParent.x), a1 + ((a2 - a1) / 2));
     }
 
+    calculateAbsoluteAngle(baselineAngle: number, relativeAngle: number) {
+        return baselineAngle + relativeAngle;
+    }
     calculateAngleDiff(baseLine: Point, offset: Point): number {
-        //console.log('baseline');
-        //console.log(baseLine);
-        //console.log('offset');
-        //console.log(offset);
-        //console.log(Math.atan(offset.y / offset.x));
-        //console.log(Math.atan(baseLine.y / baseLine.x));
-        let direction = 1;
-        let baseLineSlope = baseLine.y / baseLine.x;
-        let offsetSlope = offset.y / offset.x;
-
-        //if (((baseLineSlope < 1 && offsetSlope > 1) || (baseLineSlope > 1 && offsetSlope < 1)))
-        //    direction = -1;
-        console.log('baseline: ' + Math.atan(baseLine.y / baseLine.x) + ' offset:' + Math.atan(offset.y / offset.x) + ' direction:' + direction);
-        var angle = Math.atan((direction) * offset.y / offset.x) - Math.atan(baseLine.y / baseLine.x);
-        //angle = angle + (offset.x < 0 ? Math.PI : 0);
-        //angle = (angle < 0) ? (2 * Math.PI) + angle : angle;
+        var angle = Math.atan2(offset.y, offset.x) - Math.atan2(baseLine.y, baseLine.x);
         return angle;
     }
+    
 
     
 
