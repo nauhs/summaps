@@ -138,6 +138,18 @@ export class MapDetailUiService {
         let parentMid = this.getNodeMidpoint(parentNode);
         let amp = 150;
 
+        // if the angle is negative or greater than pi than the y will be lower
+        // if the angle is between .5pi and 1.5pi or -.5pi and -1.5pi then the x will be lower
+
+        let xMultiplier = 1;
+        if (((angle > .5 * Math.PI) && (angle < 1.5 * Math.PI)) || ((angle > -1.5 * Math.PI) && (angle < -.5 * Math.PI)))
+            xMultiplier = -1;
+
+        let yMultiplier = 1;
+        if ((angle < 0) || angle > Math.PI)
+            yMultiplier = -1;
+
+
         let x = Math.sqrt((tan * tan * amp * amp) / ((tan * tan) + 1));
         let y = Math.sqrt((amp * amp) / ((tan * tan) + 1));
 
@@ -150,8 +162,8 @@ export class MapDetailUiService {
         console.log(parentNode.offset.top + y);
 
         return {
-            x: parentNode.offset.left + x,
-            y: parentNode.offset.top + y
+            x: parentNode.offset.left + (xMultiplier * x),
+            y: parentNode.offset.top + (yMultiplier * y)
         };
     }
 
@@ -200,6 +212,11 @@ export class MapDetailUiService {
         //    direction = -1;
         console.log('baseline: ' + Math.atan(baseLine.y / baseLine.x) + ' offset:' + Math.atan(offset.y / offset.x) + ' direction:' + direction);
         var angle = Math.atan((direction) * offset.y / offset.x) - Math.atan(baseLine.y / baseLine.x);
-        return angle + (offset.x < 0 ? Math.PI : 0);
+        //angle = angle + (offset.x < 0 ? Math.PI : 0);
+        //angle = (angle < 0) ? (2 * Math.PI) + angle : angle;
+        return angle;
     }
+
+    
+
 } 
