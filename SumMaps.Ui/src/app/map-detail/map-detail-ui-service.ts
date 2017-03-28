@@ -91,8 +91,9 @@ export class MapDetailUiService {
             if (!parentNode.children || parentNode.children.length === 0)
                 return { x: parentNode.offset.left + 75, y: parentNode.offset.top };
             else {
-                let newAngle = this.getAngleForNewNode(parentNode, { x: 1, y: 0 })
-                let position = this.getNodePosition(parentNode, newAngle);
+                let baseAngle = 0;
+                let newAngle = this.getRelativeAngleForNewNode(parentNode, baseAngle)
+                let position = this.getNodePosition(parentNode, newAngle, baseAngle);
                 return { left: position.x, top: position.y };
             }
 
@@ -106,8 +107,10 @@ export class MapDetailUiService {
                 return { left: x, top: y };
             }
             else {
-                let newAngle = this.getAngleForNewNode(parentNode, this.calculateSlope(parentNode));
-                let position = this.getNodePosition(parentNode, newAngle);
+                let slopeFromParent = this.calculateSlope(parentNode);
+                let baseAngle = Math.atan2(slopeFromParent.y, slopeFromParent.x);
+                let newAngle = this.getRelativeAngleForNewNode(parentNode, baseAngle);
+                let position = this.getNodePosition(parentNode, newAngle, baseAngle);
                 return { left: position.x, top: position.y };
             }
         }
@@ -122,10 +125,10 @@ export class MapDetailUiService {
     }
 
     /// we need the relative angle, not the absolute angle
-    getNodePosition(parentNode: Node, angle: number): Point {
+    getNodePosition(parentNode: Node, relativeAngle: number, baseAngle: number): Point {
         
-        let tan = Math.tan(angle);
-        console.log('angle: ' + angle + ' tan: ' + tan);
+        let tan = Math.tan(relativeAngle);
+        console.log('angle: ' + relativeAngle + ' tan: ' + tan);
         let parentMid = this.getNodeMidpoint(parentNode);
         let amp = 150;
         
@@ -148,7 +151,7 @@ export class MapDetailUiService {
         };
     }
 
-    getAngleForNewNode(node: Node, slopeFromParent: Point): number {
+    getRelativeAngleForNewNode(node: Node, baseAngle: number): number {
         let angles: Array<number> = [];
 
         //if (node.children.length == 1)
@@ -156,7 +159,7 @@ export class MapDetailUiService {
 
         for (let c of node.children) {
             // get angles relative to the base line which is the line from this node to its parent
-            let angle = this.calculateAngleDiff(slopeFromParent, this.calculateSlope(c));
+            let angle = this.calculateAngleDiff(baseAngle, this.calculateSlope(c));
             console.log('angle: ' + angle);
             angles.push(angle);
         }
@@ -188,14 +191,15 @@ export class MapDetailUiService {
 
         //console.log('a1:' + a1 + ' a2:' + a2 + ' diff:' + (a2 - a1) / 2) + ' vacant angle: ' + a1 + ((a2 - a1) / 2));
         console.log('a1:' + a1 + ' a2:' + a2);
-        return this.calculateAbsoluteAngle(Math.atan2(slopeFromParent.y, slopeFromParent.x), a1 + ((a2 - a1) / 2));
+        //return this.calculateAbsoluteAngle(Math.atan2(slopeFromParent.y, slopeFromParent.x), a1 + ((a2 - a1) / 2));
+        return a1 + ((a2 - a1) / 2);
     }
 
     calculateAbsoluteAngle(baselineAngle: number, relativeAngle: number) {
         return baselineAngle + relativeAngle;
     }
-    calculateAngleDiff(baseLine: Point, offset: Point): number {
-        var angle = Math.atan2(offset.y, offset.x) - Math.atan2(baseLine.y, baseLine.x);
+    calculateAngleDiff(baseAngle: number, offset: Point): number {
+        var angle = Math.atan2(offset.y, offset.x) - baseAngle;
         return angle;
     }
     
