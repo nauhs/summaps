@@ -8,6 +8,9 @@ import { NodeStyleConstants } from './map-detail-style-constants'
 Injectable()
 export class MapDetailUiService {
 
+    amplitude = 130;
+    childNodeAngleCoeff = .75;
+
     getNodeMidpoint(node: Node): Point {
         let x = node.offset.left + (node.width / 2) + NodeStyleConstants.padding;
         let y = node.offset.top + (node.height / 2) + NodeStyleConstants.padding;
@@ -34,43 +37,43 @@ export class MapDetailUiService {
         let cos = Math.cos(atan * 4);
         let ampX = sin * .4 * width;
         let ampY = cos * .4 * height;
-
-        // Q1 | Q2
+        
+        // Q2 | Q1
         // ___|___
         //    |
-        // Q4 | Q3
+        // Q3 | Q4
 
         // Quadrant 1
-        if ((startPoint.x < endPoint.x) && (startPoint.y < endPoint.y)) {
-            canvasOffset = new Point(startPoint.x, startPoint.y);
-            startCoord = new Point(0, 0);
-            diffCoord = new Point(width, height);
-            cCoord1 = new Point(((.25 * width) + ampX), ((.25 * height) + ampY));
-            cCoord2 = new Point(((.75 * width) - ampX), ((.75 * height) - ampY));
-        }
-        // Quadrant 2
-        else if ((startPoint.x >= endPoint.x) && (startPoint.y < endPoint.y)) {
+        if ((startPoint.x >= endPoint.x) && (startPoint.y < endPoint.y)) {
             canvasOffset = new Point(endPoint.x, startPoint.y);
             startCoord = new Point(width, 0);
             diffCoord = new Point(-width, height);
             cCoord1 = new Point(-((.25 * width) + ampX), ((.25 * height) + ampY));
             cCoord2 = new Point(-((.75 * width) - ampX), ((.75 * height) - ampY));
         }
-        // Quadrant 3
-        else if ((startPoint.x >= endPoint.x) && (startPoint.y >= endPoint.y)) {
-            canvasOffset = new Point(endPoint.x, endPoint.y);
-            startCoord = new Point(width, height);
-            diffCoord = new Point(-width, -height);
-            cCoord1 = new Point(-((.25 * width) + ampX), -((.25 * height) + ampY));
-            cCoord2 = new Point(-((.75 * width) - ampX), -((.75 * height) - ampY));
+        // Quadrant 2
+        else if ((startPoint.x < endPoint.x) && (startPoint.y < endPoint.y)) {
+            canvasOffset = new Point(startPoint.x, startPoint.y);
+            startCoord = new Point(0, 0);
+            diffCoord = new Point(width, height);
+            cCoord1 = new Point(((.25 * width) + ampX), ((.25 * height) + ampY));
+            cCoord2 = new Point(((.75 * width) - ampX), ((.75 * height) - ampY));
         }
-        // Quadrant 4
+        // Quadrant 3
         else if ((startPoint.x < endPoint.x) && (startPoint.y >= endPoint.y)) {
             canvasOffset = new Point(startPoint.x, endPoint.y);
             startCoord = new Point(0, height);
             diffCoord = new Point(width, -height);
             cCoord1 = new Point(((.25 * width) + ampX), -((.25 * height) + ampY));
             cCoord2 = new Point(((.75 * width) - ampX), -((.75 * height) - ampY));
+        }
+        // Quadrant 4
+        else if ((startPoint.x >= endPoint.x) && (startPoint.y >= endPoint.y)) {
+            canvasOffset = new Point(endPoint.x, endPoint.y);
+            startCoord = new Point(width, height);
+            diffCoord = new Point(-width, -height);
+            cCoord1 = new Point(-((.25 * width) + ampX), -((.25 * height) + ampY));
+            cCoord2 = new Point(-((.75 * width) - ampX), -((.75 * height) - ampY));
         }
 
         let pathCoords = new PathCoords;
@@ -89,88 +92,94 @@ export class MapDetailUiService {
 
         if (!parentNode.parent) {
             if (!parentNode.children || parentNode.children.length === 0)
-                return { x: parentNode.offset.left + 75, y: parentNode.offset.top };
+                return { x: parentNode.offset.left + this.amplitude, y: parentNode.offset.top };
             else {
                 let baseAngle = 0;
                 let newAngle = this.getRelativeAngleForNewNode(parentNode, baseAngle)
                 let position = this.getNodePosition(parentNode, newAngle, baseAngle);
                 return { left: position.x, top: position.y };
             }
-
         }
         else {
-            if (!parentNode.children || parentNode.children.length === 0) {
-                slopeFromParent = this.getSlopeFromParent(parentNode);
-                let deltaCoords = this.getCoordsFromSlopeAndAmplitude(slopeFromParent, 120);
-                return { left: parentNode.offset.left + deltaCoords.x, top: parentNode.offset.top + deltaCoords.y };
+            let slopeFromParent = this.getSlopeFromParent(parentNode);
+            let baseAngle = Math.atan2(slopeFromParent.y, slopeFromParent.x);
+            let newAngle = this.getRelativeAngleForNewNode(parentNode, baseAngle);
+            let position = this.getNodePosition(parentNode, newAngle, baseAngle);
+            return { left: position.x, top: position.y };
+        }    
+    }
+    
+    getRelativeAngleForNewNode(node: Node, baseAngle: number): number {
+        
+        // if there are no children, create a child along the same line
+        // as the node to its parent
+        if (!node.children || node.children.length == 0) {
+            return 0;
+        }
+
+        let angles: Array<number> = [];
+
+        for (let c of node.children) {
+            // get angles relative to the base line which is the line from this node to its parent
+            let angle = this.calculateAngleDiff(baseAngle, this.getSlopeFromParent(c));
+            angles.push(angle);
+        }
+
+        // if this is a child node, limit the angles at which nodes can be created
+        let boundaryAngle = Math.PI;
+        if (node.parent) {
+            boundaryAngle = Math.PI * this.childNodeAngleCoeff;
+            angles.push(boundaryAngle);
+            angles.push(-boundaryAngle);
+        }
+
+        let sortedAngles = angles.sort((a1, a2) => (a1 > a2) ? 1 : ((a1 == a2) ? 0 : -1));
+
+        let a1: number, a2: number, maxDiff: number = 0;
+
+        for (let i = 1; i < sortedAngles.length; i++) {
+
+            console.log('angle: ' + sortedAngles[i - 1]);
+
+            if (!this.angleWithinRangeForChildNode(sortedAngles[i - 1], boundaryAngle)) {
+                console.log('out of range1: ' + sortedAngles[0]);
+                continue;
             }
-            else {
-                let slopeFromParent = this.getSlopeFromParent(parentNode);
-                let baseAngle = Math.atan2(slopeFromParent.y, slopeFromParent.x);
-                let newAngle = this.getRelativeAngleForNewNode(parentNode, baseAngle);
-                let position = this.getNodePosition(parentNode, newAngle, baseAngle);
-                return { left: position.x, top: position.y };
+            
+            let diff = sortedAngles[i] - sortedAngles[i - 1];
+
+            if (diff > maxDiff) {
+                a1 = sortedAngles[i - 1];
+                a2 = sortedAngles[i];
+                maxDiff = diff;
             }
         }
 
-        
+        // if this is a root node we need to account for the edge case 
+        // where the biggest vacant angle spans Q2 and Q3
+        if (!node.parent) {
+            let headAngle = sortedAngles[0];
+            let tailAngle = sortedAngles[sortedAngles.length - 1];
+            let q2q3Angle = Math.abs(-Math.PI - headAngle) + (Math.PI - tailAngle);
+
+            if (q2q3Angle > maxDiff) {
+                let angleDiff = q2q3Angle / 2;
+                if (angleDiff < Math.abs(-Math.PI - headAngle))
+                    return headAngle - angleDiff;  // the new node falls in Q2
+                else
+                    return tailAngle + angleDiff; // the new node falls in Q3
+            }
+
+        }
+
+        console.log('a1:' + a1 + ' a2:' + a2 + 'new: ' + ((a1 + ((a2 - a1) / 2))));
+        return (a1 + ((a2 - a1) / 2));
     }
-
-    getCoordsFromSlopeAndAmplitude(slope: Point, amplitude: number): Point {
-        let amp = amplitude / Math.sqrt((slope.x * slope.x) + (slope.y) * (slope.y));
-        let x = (amp * slope.x);
-        let y = (amp * slope.y);
-        return { x: x, y: y };
-    }
-
-    getSlopeFromAngle(angle: number): Point {
-
-        let tan = Math.abs(Math.tan(angle));
-        let quadrant = this.getQuadrant(angle);
-        
-
-        // note: slope is adjusted for SVC coordinate system where (0,0) is upper left corner
-        // NOT calculated off of cartesian coordinate system where (0,0) is middle
-        // thus y value is multiplied by -1
-        //if (quadrant == 1) 
-        //    return { x: 1, y: -aTan };
-        //else if (quadrant == 2) 
-        //    return { x: -1, y: -aTan };
-        //else if (quadrant == 3)
-        //    return { x: -1, y: aTan };
-        //else (quadrant == 4)
-        //    return { x: 1, y: aTan };
-        return { x: 1, y: tan };
-    }
-
-    getSlopeFromParent(node: Node) : Point {
-        let parentMid = this.getNodeMidpoint(node.parent);
-        let childMid = this.getNodeMidpoint(node);
-        return { x: childMid.x - parentMid.x, y: childMid.y - parentMid.y };
-    }
-
-    getQuadrant(angle: Number): Number {
-        if ((-2 * Math.PI) <= angle && angle < (-1.5 * Math.PI))
-            return 4;
-        else if ((-1.5 * Math.PI) <= angle && angle < (-1 * Math.PI))
-            return 3;
-        else if ((-1 * Math.PI) <= angle && angle < (-0.5 * Math.PI))
-            return 2;
-        else if ((-.5 * Math.PI) <= angle && angle <= 0)
-            return 1;
-        else if (0 < angle && angle <= (0.5 * Math.PI))
-            return 4;
-        else if (((0.5 * Math.PI) < angle) && angle <= Math.PI)
-            return 3;
-        else if ((Math.PI < angle) && angle <= (1.5 * Math.PI))
-            return 2;
-        else
-            return 1;
-    }
-
-    /// we need the relative angle, not the absolute angle
+    
     getNodePosition(parentNode: Node, relativeAngle: number, baseAngle: number): Point {
-        
+        let quadrant = this.getQuadrant(baseAngle + relativeAngle);
+        console.log('relativeAngle: ' + relativeAngle + ' totalAngle:' + (baseAngle + relativeAngle) + ' quadrant:' + quadrant);
+
         // we need to the points on the new line defined by relative angle that will be 150px
         // away from the parent node.  this is essentially finding the intersections of a circle and a line
         
@@ -180,11 +189,15 @@ export class MapDetailUiService {
         let m = Math.tan(baseAngle + relativeAngle);  // todo, sometimes subtract
 
         // if m is essentially a straight line we can do simpler stuff
-        if (m > 1000)
-            return { x: parentNode.offset.left, y: parentNode.offset.top - 150 };
+        if (m > 1000) {
+            let multiplier = (quadrant == 3 || quadrant == 4) ? 1 : -1;
+            return { x: parentNode.offset.left, y: parentNode.offset.top + (multiplier * this.amplitude) };
+        }
 
-        if (Math.abs(m) < 1 / 1000)
-            return { x: parentNode.offset.left - 150, y: parentNode.offset.top};
+        if (Math.abs(m) < 1 / 1000) {
+            let multiplier = (quadrant == 1 || quadrant == 4) ? 1 : -1;
+            return { x: parentNode.offset.left + (multiplier * this.amplitude), y: parentNode.offset.top };
+        }
 
         let b = parentNode.offset.top - (m * parentNode.offset.left);
         console.log('total angle: ' + (baseAngle + relativeAngle) + ' m: ' + m + ' b: ' + b);
@@ -205,112 +218,73 @@ export class MapDetailUiService {
 
         let d = (m * m) + 1;
         let e = (2 * m * (b - k)) - (2 * j);
-        let f = (b - k) * (b - k) + (j * j) - (150 * 150);
+        let f = (b - k) * (b - k) + (j * j) - (this.amplitude * this.amplitude);
 
         // solve for x
         // x = (-e +- Math.sqrt(e^2 - 4df)) / 2d
-        let x = (-e + Math.sqrt((e * e) - (4 * d * f))) / (2 * d);
+        let multiplier = (quadrant == 1 || quadrant == 4) ? 1 : -1;
+        let x = (-e + multiplier * Math.sqrt((e * e) - (4 * d * f))) / (2 * d);
 
         // solve for y
         // y = mx + b
         let y = (m * x) + b;
 
+        // flip the y coordinate to translate from 
+        // cartesian coordinates to svg coordinates
+        let yDelta = parentNode.offset.top - y;
+        y = parentNode.offset.top + yDelta;
+
         console.log(x + ',' + y);
         return { x: x, y: y };
-
-
-
-
-
-
-
-        //console.log('base: ' + baseAngle + ' rel: ' + relativeAngle);
-        //let amp = 150;
-
-        //// get coordinates for base node
-        //let slope = this.getSlopeFromAngle(baseAngle);
-        //console.log('baseSlope, deltaCoords');
-        //console.log(slope);
-        //let deltaCoords = this.getCoordsFromSlopeAndAmplitude(slope, amp);
-        //console.log(deltaCoords);
-        //let baseNode = { x: parentNode.offset.left + deltaCoords.x, y: parentNode.offset.top + deltaCoords.y };
-
-        //// get delta coords for relative angle
-        //let relativeSlope = this.getSlopeFromAngle(relativeAngle);
-        //let relativeCoords = this.getCoordsFromSlopeAndAmplitude(relativeSlope, amp);
-        //console.log('relSlope, relativeCoords');
-        //console.log(relativeSlope);
-        //console.log(relativeCoords);
-
-        //let quadrant = this.getQuadrant(relativeAngle);
-        //let coords: Point;
-        //if (quadrant == 1) 
-        //    coords = { x: baseNode.x - relativeCoords.x, y: baseNode.y - relativeCoords.y };
-        //else if (quadrant == 2)
-        //    coords = { x: parentNode.offset.left - relativeCoords.x, y: baseNode.y - relativeCoords.y };
-        //else if (quadrant == 3)
-        //    coords = { x: parentNode.offset.left - relativeCoords.x, y: baseNode.y + relativeCoords.y };
-        //else 
-        //    coords = { x: baseNode.x - relativeCoords.x, y: baseNode.y + relativeCoords.y };
-
-        //console.log('angle: ' + relativeAngle + 'quadrant: ' + quadrant + ' coords:' );
-        //console.log(coords);
-
-        //return coords;
-
+        
     }
 
-    getRelativeAngleForNewNode(node: Node, baseAngle: number): number {
-        let angles: Array<number> = [];
-
-        //if (node.children.length == 1)
-        //    return this.calculateAbsoluteAngle(Math.atan2(slopeFromParent.y, slopeFromParent.x), .2 * Math.PI);
-
-        for (let c of node.children) {
-            // get angles relative to the base line which is the line from this node to its parent
-            let angle = this.calculateAngleDiff(baseAngle, this.getSlopeFromParent(c));
-            angles.push(angle);
-        }
-
-
-        // if this is a root node, create child nodes at any angle
-        // if this is a child node, don't create child nodes at angles greater than 90 degrees
-        let boundaryAngle = (!node.parent ? Math.PI : Math.PI / 2);
-        angles.push(boundaryAngle);
-        angles.push(-boundaryAngle);
-        
-        let sortedAngles = angles.sort((a1, a2) => (a1 > a2) ? 1 : ((a1 == a2) ? 0 : -1));
-
-        let a1: number, a2: number, maxDiff: number = 0;
-        
-        for (let i = 1; i < sortedAngles.length; i++) {
-
-            console.log('angle: ' + sortedAngles[i - 1]);
-
-            if (sortedAngles[i] > boundaryAngle || sortedAngles[i] < -boundaryAngle)
-                continue;
-
-            let diff = sortedAngles[i] - sortedAngles[i - 1];
-            
-            if (diff > maxDiff) {
-                a1 = sortedAngles[i - 1];
-                a2 = sortedAngles[i];
-                maxDiff = diff;
-            }
-        }
-        
-        console.log('a1:' + a1 + ' a2:' + a2 + 'new: ' + ((a1 + ((a2 - a1) / 2))));
-        return (a1 + ((a2 - a1) / 2));
+    getQuadrant(angle: Number): Number {
+        if ((-2 * Math.PI) <= angle && angle < (-1.5 * Math.PI))
+            return 1;
+        else if ((-1.5 * Math.PI) <= angle && angle < (-1 * Math.PI))
+            return 2;
+        else if ((-1 * Math.PI) <= angle && angle < (-0.5 * Math.PI))
+            return 3;
+        else if ((-.5 * Math.PI) <= angle && angle <= 0)
+            return 4;
+        else if (0 < angle && angle <= (0.5 * Math.PI))
+            return 1;
+        else if (((0.5 * Math.PI) < angle) && angle <= Math.PI)
+            return 2;
+        else if ((Math.PI < angle) && angle <= (1.5 * Math.PI))
+            return 3;
+        else
+            return 4;
     }
 
-    calculateAbsoluteAngle(baselineAngle: number, relativeAngle: number) {
-        return baselineAngle + relativeAngle;
-    }
     calculateAngleDiff(baseAngle: number, offset: Point): number {
         var angle = Math.atan2(offset.y, offset.x) - baseAngle;
+        if (angle < -.75 * Math.PI) {
+            console.log('TOO SMALL: ' + Math.atan2(offset.y, offset.x) + ' baseAngle: ' + baseAngle + ' total: ' + angle);
+            console.log(offset.x + ',' + offset.y);
+        }
         return angle;
     }
-    
+
+    getCoordsFromSlopeAndAmplitude(slope: Point, amplitude: number): Point {
+        let amp = amplitude / Math.sqrt((slope.x * slope.x) + (slope.y) * (slope.y));
+        let x = (amp * slope.x);
+        let y = (amp * slope.y);
+        return { x: x, y: y };
+    }
+
+    getSlopeFromParent(node: Node): Point {
+        let parentMid = this.getNodeMidpoint(node.parent);
+        let childMid = this.getNodeMidpoint(node);
+
+        // multiply y value by -1 to switch svg coordinates to cartesian values
+        return { x: childMid.x - parentMid.x, y: -1 * (childMid.y - parentMid.y) };
+    }
+
+    angleWithinRangeForChildNode(angle: number, boundaryAngle: number): boolean {
+        return angle <= boundaryAngle && angle >= -boundaryAngle;
+    }
 
     
 
