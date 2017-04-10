@@ -119,12 +119,6 @@ export class MapDetailUiService {
 
         let angles: Array<number> = [];
 
-        for (let c of node.children) {
-            // get angles relative to the base line which is the line from this node to its parent
-            let angle = this.calculateAngleDiff(baseAngle, this.getSlopeFromParent(c));
-            angles.push(angle);
-        }
-
         // if this is a child node, limit the angles at which nodes can be created
         let boundaryAngle = Math.PI;
         if (node.parent) {
@@ -132,6 +126,14 @@ export class MapDetailUiService {
             angles.push(boundaryAngle);
             angles.push(-boundaryAngle);
         }
+
+        for (let c of node.children) {
+            // get angles relative to the base line which is the line from this node to its parent
+            let angle = this.calculateAngleDiff(baseAngle, this.getSlopeFromParent(c));
+            angles.push(angle);
+        }
+
+        
 
         let sortedAngles = angles.sort((a1, a2) => (a1 > a2) ? 1 : ((a1 == a2) ? 0 : -1));
 
@@ -172,7 +174,7 @@ export class MapDetailUiService {
 
         }
 
-        console.log('a1:' + a1 + ' a2:' + a2 + 'new: ' + ((a1 + ((a2 - a1) / 2))));
+        console.log('base angle:' + baseAngle + ' a1:' + a1 + ' a2:' + a2 + 'new: ' + ((a1 + ((a2 - a1) / 2))));
         return (a1 + ((a2 - a1) / 2));
     }
     
@@ -260,11 +262,19 @@ export class MapDetailUiService {
 
     calculateAngleDiff(baseAngle: number, offset: Point): number {
         var angle = Math.atan2(offset.y, offset.x) - baseAngle;
-        if (angle < -.75 * Math.PI) {
-            console.log('TOO SMALL: ' + Math.atan2(offset.y, offset.x) + ' baseAngle: ' + baseAngle + ' total: ' + angle);
-            console.log(offset.x + ',' + offset.y);
-        }
-        return angle;
+
+        // return a value between -pi and pi
+        let normalizedAngle: number;
+
+        if (angle < -Math.PI)
+            normalizedAngle = Math.PI + (angle + Math.PI);
+        else if (angle > Math.PI)
+            normalizedAngle = -Math.PI + (angle - Math.PI);
+        else
+            normalizedAngle = angle;
+
+        console.log('angle: ' + angle + 'normalized angle: ' + normalizedAngle);
+        return normalizedAngle;
     }
 
     getCoordsFromSlopeAndAmplitude(slope: Point, amplitude: number): Point {

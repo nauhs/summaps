@@ -80,7 +80,7 @@ export class NodeService {
         var branchDepth = node.branchDepth + 1;
 
         let offset = this.mapDetailUiService.getNewNodeOffset(node);
-        let newNode = this.createNode(id, offset, 'x ' + offset.left + ' y:' + offset.top, branch, branchDepth); 
+        let newNode = this.createNode(id, offset, branch, branch, branchDepth); 
         newNode.parent = node;
         if (!node.children)
             node.children = [];
