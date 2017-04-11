@@ -92,7 +92,7 @@ export class MapDetailUiService {
 
         if (!parentNode.parent) {
             if (!parentNode.children || parentNode.children.length === 0)
-                return { x: parentNode.offset.left + this.amplitude, y: parentNode.offset.top };
+                return { left: parentNode.offset.left + this.amplitude, top: parentNode.offset.top };
             else {
                 let baseAngle = 0;
                 let newAngle = this.getRelativeAngleForNewNode(parentNode, baseAngle)
@@ -140,13 +140,9 @@ export class MapDetailUiService {
         let a1: number, a2: number, maxDiff: number = 0;
 
         for (let i = 1; i < sortedAngles.length; i++) {
-
-            console.log('angle: ' + sortedAngles[i - 1]);
-
-            if (!this.angleWithinRangeForChildNode(sortedAngles[i - 1], boundaryAngle)) {
-                console.log('out of range1: ' + sortedAngles[0]);
+        
+            if (!this.angleWithinRangeForChildNode(sortedAngles[i - 1], boundaryAngle)) 
                 continue;
-            }
             
             let diff = sortedAngles[i] - sortedAngles[i - 1];
 
@@ -173,36 +169,33 @@ export class MapDetailUiService {
             }
 
         }
-
-        console.log('base angle:' + baseAngle + ' a1:' + a1 + ' a2:' + a2 + 'new: ' + ((a1 + ((a2 - a1) / 2))));
         return (a1 + ((a2 - a1) / 2));
     }
     
     getNodePosition(parentNode: Node, relativeAngle: number, baseAngle: number): Point {
         let quadrant = this.getQuadrant(baseAngle + relativeAngle);
-        console.log('relativeAngle: ' + relativeAngle + ' totalAngle:' + (baseAngle + relativeAngle) + ' quadrant:' + quadrant);
+        //console.log('relativeAngle: ' + relativeAngle + ' totalAngle:' + (baseAngle + relativeAngle) + ' quadrant:' + quadrant);
 
-        // we need to the points on the new line defined by relative angle that will be 150px
-        // away from the parent node.  this is essentially finding the intersections of a circle and a line
+
+        // we need to find the points on the new line defined by relative angle that will be 130px
+        // away from the parent node.  this means finding the intersections of a circle and a line
         
-
         // first coefficients for the equation of the line: 
         // y = mx + b
-        let m = Math.tan(baseAngle + relativeAngle);  // todo, sometimes subtract
+        let m = Math.tan(baseAngle + relativeAngle);  
 
         // if m is essentially a straight line we can do simpler stuff
-        if (m > 1000) {
+        if (Math.abs(m) > 250) {
             let multiplier = (quadrant == 3 || quadrant == 4) ? 1 : -1;
             return { x: parentNode.offset.left, y: parentNode.offset.top + (multiplier * this.amplitude) };
         }
 
-        if (Math.abs(m) < 1 / 1000) {
+        if (Math.abs(m) < 1 / 250) {
             let multiplier = (quadrant == 1 || quadrant == 4) ? 1 : -1;
             return { x: parentNode.offset.left + (multiplier * this.amplitude), y: parentNode.offset.top };
         }
 
         let b = parentNode.offset.top - (m * parentNode.offset.left);
-        console.log('total angle: ' + (baseAngle + relativeAngle) + ' m: ' + m + ' b: ' + b);
 
         // using trig concepts outlined here:
         // http://math.stackexchange.com/questions/311921/get-location-of-vector-circle-intersection
@@ -235,8 +228,7 @@ export class MapDetailUiService {
         // cartesian coordinates to svg coordinates
         let yDelta = parentNode.offset.top - y;
         y = parentNode.offset.top + yDelta;
-
-        console.log(x + ',' + y);
+        
         return { x: x, y: y };
         
     }

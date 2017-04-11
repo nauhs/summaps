@@ -48,16 +48,16 @@ export class NodeService {
         //this.nodes = [rn, cn1, cn2, cn3, cn4, gn1_1];
 
         var rn = this.createNode('rn', { top: 200, left: 400 }, 'x:400, y:200', 0, 0);
-        var cn1 = this.createNode('cn1', { top: 200, left: 600 }, 'x:600 y:200', 1, 1);
+        //var cn1 = this.createNode('cn1', { top: 200, left: 600 }, 'x:600 y:200', 1, 1);
 
-        var cn2 = this.createNode('cn2', { top: 350, left: 500 }, 'x:400, y:100', 2, 1);
+        //var cn2 = this.createNode('cn2', { top: 350, left: 500 }, 'x:400, y:100', 2, 1);
 
-        rn.children = [cn1, cn2];
-        cn1.parent = rn;
+        //rn.children = [cn1, cn2];
+        //cn1.parent = rn;
 
-        cn2.parent = rn;
+        //cn2.parent = rn;
 
-        this.nodes = [rn, cn1, cn2];
+        this.nodes = [rn];
         return Promise.resolve(this.nodes);
     }
 
@@ -78,6 +78,7 @@ export class NodeService {
         var branchDepth = node.branchDepth + 1;
 
         let offset = this.mapDetailUiService.getNewNodeOffset(node);
+        console.log(offset);
         let newNode = this.createNode(id, offset, 'X', branch, branchDepth); 
         newNode.parent = node;
         if (!node.children)
