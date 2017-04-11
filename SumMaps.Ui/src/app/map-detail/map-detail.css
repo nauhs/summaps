@@ -12,7 +12,8 @@ body {
   border-radius: 10px; }
 
 .node-selected {
-  border: solid 3px #ffff88; }
+  border: solid 3px #ffff88;
+  z-index: 50; }
 
 .root-node {
   background-color: #f9f98e; }

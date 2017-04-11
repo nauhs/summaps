@@ -67,26 +67,35 @@ export class NodeService {
 
     selectNode(node: Node): void {
         for(let n of this.nodes){
-            n.selected = n.id === node.id;
+            n.selected = (n.id === node.id);
         }
     }
 
     createChildNode(node: Node): void {
-        var id = 'cn' + node.branch + '_' + (node.branchDepth + 1);
-        var branch = node.branch > 0 ?
-            node.branch :
-            (node.children ? node.children.length + 1 : 1);
+        var id = String(Math.random()); // temp id
 
+        var branch = this.getBranchOfChild(node);
         var branchDepth = node.branchDepth + 1;
 
         let offset = this.mapDetailUiService.getNewNodeOffset(node);
-        let newNode = this.createNode(id, offset, branch, branch, branchDepth); 
+        let newNode = this.createNode(id, offset, 'X', branch, branchDepth); 
         newNode.parent = node;
         if (!node.children)
             node.children = [];
         node.children.push(newNode);
+        this.nodes.push(newNode);
 
         this.selectNode(newNode);
+    }
+
+    getBranchOfChild(parentNode: Node): number {
+        // root node has branch = 0
+        // if parentNode is root, branch is the ordinal # of this child
+        // if parentNode isn't a root node, the branch is the same as the parent
+        var branch = parentNode.branch == 0 ?
+            (parentNode.children ? parentNode.children.length + 1 : 1) :
+            parentNode.branch;
+        return branch;
     }
 
 }

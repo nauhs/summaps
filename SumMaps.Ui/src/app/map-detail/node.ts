@@ -8,6 +8,7 @@
     height: number;
     branch: number;
     branchDepth: number;
+    nodePath: String;
     selected: boolean;
     constructor() {
     }

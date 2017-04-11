@@ -20,6 +20,7 @@ body {
 
 .node-selected {
     border: solid 3px saturate($baseNodeColor, 25);
+    z-index: 50;
 }
 
 .root-node {
@@ -45,3 +46,4 @@ $colors: #f0810f #4cb5f5 #F75da9 #b3c100 #f5f14c #00c135 #f54c71 #f7ca5d #e14cf5
 svg {
 	position: absolute;
 }
+
